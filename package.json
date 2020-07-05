@@ -1,0 +1,26 @@
+{
+  "name": "datacore-assets",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node build/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "lz4": "0.6.3",
+    "lzma-native": "^6.0.1",
+    "node-fetch": "^2.6.0",
+    "pngjs": "^3.4.0",
+    "unitiyfs-asset-parser": "file:unitiyfs-asset-parser"
+  },
+  "devDependencies": {
+    "@types/node": "^13.13.12",
+    "@types/node-fetch": "^2.5.7",
+    "@types/pngjs": "^3.4.2",
+    "typescript": "^3.9.6"
+  }
+}

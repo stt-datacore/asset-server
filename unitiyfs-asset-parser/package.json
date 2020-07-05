@@ -1,0 +1,21 @@
+{
+	"author": {
+		"name": "IAmPicard"
+	},
+	"contributors": [
+		"TemporalAgent7"
+	],
+	"dependencies": {
+		"buffer": "^5.0.8",
+		"lz4js": "^0.2.0"
+	},
+	"description": "UnityFS Asset Bundle parser",
+	"devDependencies": {
+		"pngjs": "^3.3.0"
+	},
+	"license": "GPL-3.0",
+	"main": "src/index.js",
+	"name": "unitiyfs-asset-parser",
+	"types": "unitiyfs-asset-parser.d.ts",
+	"version": "0.0.5"
+}
