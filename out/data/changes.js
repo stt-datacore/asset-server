@@ -1,8 +1,8 @@
 function imageSlot(url) {
-	return `<div style='padding:0.4em' data-balloon-length="large" aria-label="${url}" data-balloon-pos="down"><a href="https://assets.datacore.app/${url}.png" target="_blank"><img src='https://assets.datacore.app/${url}.png' alt='${url}' height='200px' /></a></div>`;
+	return `<div style='padding:0.4em' data-balloon-length="large" aria-label="${url}" data-balloon-pos="down"><a href="../${url}.png" target="_blank"><img src='../${url}.png' alt='${url}' height='200px' /></a></div>`;
 }
 
-fetch('https://assets.datacore.app/data/changelog.json')
+fetch('changelog.json')
 	.then((res) => {
 		res.json().then((data) => {
 			let frag = document.createDocumentFragment();
