@@ -65,7 +65,7 @@ async function downloadAsset(asset_url: string, url: string, filePath: string, w
 					fs.writeFileSync(outPath, pngImage);
 				});
 			} else {
-				throw Error(`Unexpected sprite found in image asset '${asset_url}'`);
+				throw Error(`Unexpected sprite found in image asset '${asset_url + url}'`);
 			}
 		} else if (
 			result.sprites.length === 1 ||
@@ -75,7 +75,7 @@ async function downloadAsset(asset_url: string, url: string, filePath: string, w
 			fs.writeFileSync(filePath, pngImage);
 		}
 	} catch (ex) {
-		throw Error(`Failed to fetch asset '${asset_url}': ${ex}`);
+		throw Error(`Exception while parsing asset '${asset_url + url}': ${ex}`);
 	}
 }
 
