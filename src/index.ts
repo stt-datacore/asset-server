@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const OUT_PATH = path.resolve(process.env.OUT_PATH ? process.env.OUT_PATH : path.join(__dirname, 'out'));
 
-const CLIENT_VERSION = process.env.CLIENT_VERSION;
+const CLIENT_PLATFORM_FOLDER = 'webgl';
 
 function assetDestination(iconName: string) {
 	return path.join(OUT_PATH, '/assets/', iconName.length < 2 ? '/atlas/' : `${iconName}.png`);
@@ -79,11 +79,26 @@ async function downloadAsset(asset_url: string, url: string, filePath: string, w
 	}
 }
 
-async function loadConfig() {
-	const URL_SERVER = 'https://stt.disruptorbeam.com/';
-	const CLIENT_PLATFORM_FOLDER = 'webgl';
+async function getLatestBundleVersion() {
+	let response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/production/${CLIENT_PLATFORM_FOLDER}_minimum_version.txt`);
+	if (!response.ok) {
+		throw Error('Failed to fetch minimum version');
+	}
 
-	let configUrl = `${URL_SERVER}config?client_version=${CLIENT_VERSION}&platform_folder=${CLIENT_PLATFORM_FOLDER}`;
+	let client_version = (await response.text()).trim();
+
+	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/production/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
+	if (!response.ok) {
+		throw Error('Failed to fetch bundle version');
+	}
+
+	let bundle_version = (await response.text()).trim();
+
+	return {client_version, bundle_version};
+}
+
+async function loadAssetURL(client_version: string, bundle_version: string) {
+	let configUrl = `https://stt.disruptorbeam.com/config?client_version=${client_version}&platform_folder=${CLIENT_PLATFORM_FOLDER}`;
 
 	let response = await fetch(configUrl);
 	if (!response.ok) {
@@ -92,27 +107,18 @@ async function loadConfig() {
 
 	let data = await response.json();
 
-	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/production/webgl_${CLIENT_VERSION}.txt`);
-	if (!response.ok) {
-		throw Error('Failed to fetch bundle version');
-	}
-
-	let bundle_version = await response.text();
-
-	bundle_version = bundle_version.trim();
-
 	console.log(`Config URL: '${configUrl}'; bundle_version: '${bundle_version}'`);
 
-	return {
-		bundle_version,
-		asset_url: `${data.config.asset_server}bundles/${CLIENT_PLATFORM_FOLDER}/default/${CLIENT_VERSION}/${bundle_version}/`
-	};
+	return `${data.config.asset_server}bundles/${CLIENT_PLATFORM_FOLDER}/default/${client_version}/${bundle_version}/`;
 }
 
 async function recordChangeLog(bundle_version: string, images: Map<string, string[]>) {
-	let versions = JSON.parse(fs.readFileSync(path.join(OUT_PATH, '/data/versions.json'), 'utf8'));
+	let versions = [];
+	if (fs.existsSync(path.join(OUT_PATH, '/data/versions.json'))) {
+		versions = JSON.parse(fs.readFileSync(path.join(OUT_PATH, '/data/versions.json'), 'utf8'));
+	}
 
-	let previousAssets = versions[versions.length - 1].assets;
+	let previousAssets = (versions.length > 0) ? versions[versions.length - 1].assets : [];
 
 	let sanityCheck = versions.find((ver: any) => ver.version === bundle_version);
 	if (sanityCheck) {
@@ -153,16 +159,23 @@ async function main() {
 		fs.mkdirSync(path.join(OUT_PATH, '/assets/'));
 	}
 
+	if (!fs.existsSync(path.join(OUT_PATH, '/assets/atlas/'))) {
+		fs.mkdirSync(path.join(OUT_PATH, '/assets/atlas/'));
+	}
+
 	if (!fs.existsSync(path.join(OUT_PATH, '/data/'))) {
 		fs.mkdirSync(path.join(OUT_PATH, '/data/'));
 	}
 
 	console.log(`Running on ${new Date().toString()}...`);
 
-	let { bundle_version, asset_url } = await loadConfig();
-	console.log(`Found latest asset url as '${asset_url}'`);
+	const { client_version, bundle_version } = await getLatestBundleVersion();
 
-	let latestVersion = fs.readFileSync(path.join(OUT_PATH, '/data/latestVersion.txt'), 'utf8').trim();
+	let latestVersion = 'NONE';
+	if (fs.existsSync(path.join(OUT_PATH, '/data/latestVersion.txt'))) {
+		latestVersion = fs.readFileSync(path.join(OUT_PATH, '/data/latestVersion.txt'), 'utf8').trim();
+	}
+
 	if (latestVersion === bundle_version) {
 		// Nothing to do, no updates
 		console.log(`Nothing to do, no updates (version ${latestVersion})`);
@@ -170,6 +183,10 @@ async function main() {
 	}
 
 	console.log(`New version ${bundle_version} (old version ${latestVersion})`);
+
+	const asset_url = await loadAssetURL(client_version, bundle_version);
+
+	console.log(`Found latest asset url as '${asset_url}'`);
 
 	let response = await fetch(asset_url + 'asset_bundles');
 	if (!response.ok) {
