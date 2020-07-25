@@ -204,9 +204,10 @@ async function main() {
 	if (res.assetBundleManifest) {
 		let images = new Map<string, string[]>();
 		let atlases: string[] = [];
+		// TODO: use the hash of each asset bundle to see if it changed and needs to be redownloaded / invalidated
 		res.assetBundleManifest.forEach(asset => {
-			if (asset.startsWith('images_') && asset.endsWith('d')) {
-				let name = asset.substr(7);
+			if (asset.name.startsWith('images_') && asset.name.endsWith('d')) {
+				let name = asset.name.substr(7);
 				let basename = name.substring(0, name.length - 3);
 				let ext = name.substring(name.length - 2);
 				if (!images.has(basename)) {
@@ -214,8 +215,8 @@ async function main() {
 				} else {
 					images.set(basename, images.get(basename)!.concat([ext]));
 				}
-			} else if (asset.startsWith('atlas_') && asset.endsWith('sd')) {
-				atlases.push(asset);
+			} else if (asset.name.startsWith('atlas_') && asset.name.endsWith('sd')) {
+				atlases.push(asset.name);
 			}
 		});
 

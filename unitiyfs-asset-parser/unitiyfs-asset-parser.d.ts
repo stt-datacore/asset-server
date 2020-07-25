@@ -17,9 +17,15 @@ declare module 'unitiyfs-asset-parser' {
 		};
 		sprites: Array<Sprite>;
 	}
+	
+	export interface BundleManifestEntry {
+		name: string;
+		hash: number[];
+		dependencies: number[];
+	}
 
 	export interface AssetBundleManifest {
-		assetBundleManifest: string[];
+		assetBundleManifest: BundleManifestEntry[];
 	}
 
 	export function parseAssetBundle(data: Uint8Array): ParseResults | undefined;

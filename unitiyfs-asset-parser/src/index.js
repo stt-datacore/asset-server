@@ -13,14 +13,14 @@ var Buffer = self.Buffer;
 var assetBundle = new Parser()
 	.endianess('big')
 	.string('signature', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	})
 	.int32('format_version')
 	.string('unity_version', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	})
 	.string('generator_version', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	})
 	.int32('file_size1')
 	.int32('file_size2')
@@ -29,11 +29,11 @@ var assetBundle = new Parser()
 	.uint32('flags')
 	.array('compressedBlk', {
 		type: 'uint8',
-		length: 'ciblock_size'
+		length: 'ciblock_size',
 	})
 	.array('assets', {
 		type: 'uint8',
-		readUntil: 'eof'
+		readUntil: 'eof',
 	});
 
 var blockList = new Parser()
@@ -41,24 +41,15 @@ var blockList = new Parser()
 	.skip(16)
 	.int32('num_blocks')
 	.array('blocks', {
-		type: Parser.start()
-			.int32('busize')
-			.int32('bcsize')
-			.int16('bflags'),
-		length: 'num_blocks'
+		type: Parser.start().int32('busize').int32('bcsize').int16('bflags'),
+		length: 'num_blocks',
 	})
 	.int32('num_nodes')
 	.array('nodes', {
-		type: Parser.start()
-			.int32('ofs1')
-			.int32('ofs2')
-			.int32('size1')
-			.int32('size2')
-			.int32('status')
-			.string('name', {
-				zeroTerminated: true
-			}),
-		length: 'num_nodes'
+		type: Parser.start().int32('ofs1').int32('ofs2').int32('size1').int32('size2').int32('status').string('name', {
+			zeroTerminated: true,
+		}),
+		length: 'num_nodes',
 	});
 
 var typeParser = new Parser()
@@ -76,16 +67,13 @@ var typeTreeParser = new Parser()
 	.endianess('little')
 	.int32('class_id')
 	.choice(undefined, {
-		tag: vars => vars.format,
+		tag: (vars) => vars.format,
 		choices: {
-			17: Parser.start()
-				.endianess('little')
-				.int8('unk0')
-				.int16('script_id')
+			17: Parser.start().endianess('little').int8('unk0').int16('script_id'),
 		},
-		defaultChoice: Parser.start()
+		defaultChoice: Parser.start(),
 	})
-	.skip(function(vars) {
+	.skip(function (vars) {
 		if (vars.format === 17) {
 			if (this.class_id === 114) {
 				this.class_id = this.script_id >= 0 ? -2 - this.script_id : -1;
@@ -97,24 +85,24 @@ var typeTreeParser = new Parser()
 	.uint32('buffer_bytes')
 	.array('node_data', {
 		type: typeParser,
-		length: 'num_nodes'
+		length: 'num_nodes',
 	})
 	.array('buffer_data', {
 		type: 'uint8',
-		length: 'buffer_bytes'
+		length: 'buffer_bytes',
 	});
 
 var typeStructParser = new Parser()
 	.endianess('little')
 	.string('generator_version', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	})
 	.uint32('target_platform')
 	.uint8('has_type_trees')
 	.int32('num_types')
 	.array('types', {
 		type: typeTreeParser,
-		length: 'num_types'
+		length: 'num_types',
 	});
 
 var objectParser15 = new Parser()
@@ -134,12 +122,12 @@ var objectParser15 = new Parser()
 			.int16('unk1')
 			.int8('unk2')
 			.align(4),
-		length: 'num_objects'
+		length: 'num_objects',
 	})
 	.uint32('num_adds', { assert: 0 })
 	.uint32('num_refs', { assert: 0 })
 	.string('unk_string', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	});
 
 var objectParser15Manifest = new Parser()
@@ -158,12 +146,12 @@ var objectParser15Manifest = new Parser()
 			.int16('unk1')
 			.int8('unk2')
 			.align(4),
-		length: 'num_objects'
+		length: 'num_objects',
 	})
 	.uint32('num_adds', { assert: 0 })
 	.uint32('num_refs', { assert: 0 })
 	.string('unk_string', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	});
 
 var objectParser17 = new Parser()
@@ -178,12 +166,12 @@ var objectParser17 = new Parser()
 			.uint32('data_offset')
 			.uint32('size')
 			.int32('type_id'),
-		length: 'num_objects'
+		length: 'num_objects',
 	})
 	.uint32('num_adds', { assert: 0 })
 	.uint32('num_refs', { assert: 0 })
 	.string('unk_string', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	});
 
 // Use this parser for images, the big endian for the bundle manifest
@@ -199,26 +187,26 @@ var objectParser17Little = new Parser()
 			.uint32('data_offset')
 			.uint32('size')
 			.int32('type_id'),
-		length: 'num_objects'
+		length: 'num_objects',
 	})
 	.uint32('num_adds', { assert: 0 })
 	.uint32('num_refs', { assert: 0 })
 	.string('unk_string', {
-		zeroTerminated: true
+		zeroTerminated: true,
 	});
 
 var assetParser = new Parser()
 	.endianess('big')
 	.uint32('metadata_size')
 	.uint32('file_size')
-	.uint32('format', { assert: fmt => fmt === 15 || fmt === 17 })
+	.uint32('format', { assert: (fmt) => fmt === 15 || fmt === 17 })
 	.uint32('data_offset') // Hard-coded assume format > 9
 	.uint32('endianness', { assert: 0 })
 	.endianess('little')
 	.nest('typeStruct', { type: typeStructParser })
 	.array('objectData', {
 		type: 'uint8',
-		readUntil: 'eof'
+		readUntil: 'eof',
 	});
 
 function alignOff(offset) {
@@ -314,7 +302,7 @@ function read_value(object, type, objectBuffer, offset) {
 			// A dictionary
 			result = {};
 
-			type.children.forEach(child => {
+			type.children.forEach((child) => {
 				let rVal = read_value(object, child, objectBuffer, offset);
 				result[child.name] = rVal.result;
 				offset = rVal.offset;
@@ -371,9 +359,9 @@ async function parseAssetBundle(data, isManifest) {
 					dictSize: dictionarySize,
 					lp: lp,
 					lc: lc,
-					pb: pb
-				}
-			}
+					pb: pb,
+				},
+			},
 		});
 
 		//decompressed = await lzma.decompress(bundle.assets);
@@ -414,7 +402,7 @@ async function parseAssetBundle(data, isManifest) {
 
 			// Array index could be "index" most of the time ?
 			let arIndex = index;
-			if ((object.type_id >= 0) && (object.type_id < asset.typeStruct.types.length)) {
+			if (object.type_id >= 0 && object.type_id < asset.typeStruct.types.length) {
 				arIndex = object.type_id;
 			}
 			class_id = asset.typeStruct.types[arIndex].class_id;
@@ -441,12 +429,12 @@ async function parseAssetBundle(data, isManifest) {
 		}
 	};
 
-	let buildTypeTree = type => {
+	let buildTypeTree = (type) => {
 		// This makes assumptions about the order in which the nodes are serialized
 		var parents = [type.node_data[0]];
 		var curr;
 
-		type.node_data.forEach(node => {
+		type.node_data.forEach((node) => {
 			node.type = getString(node.typeOffset, type);
 			node.name = getString(node.nameOffset, type);
 			node.children = [];
@@ -465,7 +453,7 @@ async function parseAssetBundle(data, isManifest) {
 		});
 	};
 
-	asset.typeStruct.types.forEach(type => {
+	asset.typeStruct.types.forEach((type) => {
 		buildTypeTree(type);
 	});
 
@@ -475,9 +463,9 @@ async function parseAssetBundle(data, isManifest) {
 
 	let parsedObjects = [];
 	asset.objects.forEach((object, index) => {
-		var type_tree = asset.typeStruct.types.find(type => type.class_id == object.type_id);
+		var type_tree = asset.typeStruct.types.find((type) => type.class_id == object.type_id);
 		if (!type_tree) {
-			type_tree = asset.typeStruct.types.find(type => type.class_id == object.class_id);
+			type_tree = asset.typeStruct.types.find((type) => type.class_id == object.class_id);
 			if (!type_tree) {
 				//type_tree = standardTypes.types.find((type) => type.class_id == object.class_id);
 				if (!type_tree) {
@@ -488,9 +476,7 @@ async function parseAssetBundle(data, isManifest) {
 		}
 
 		var objectBuffer = Buffer.from(
-			bundle.assets.slice(
-				asset.data_offset + object.data_offset /*, asset.data_offset + object.data_offset + object.size*/
-			)
+			bundle.assets.slice(asset.data_offset + object.data_offset /*, asset.data_offset + object.data_offset + object.size*/)
 		);
 		let parsedObject = read_value(object, type_tree.node_data[0], objectBuffer, 0).result;
 		parsedObject.type = type_tree.node_data[0].type;
@@ -503,7 +489,7 @@ async function parseAssetBundle(data, isManifest) {
 	let imageTexture = undefined;
 	let hasSprites = false;
 	let assetBundleManifest = undefined;
-	parsedObjects.forEach(object => {
+	parsedObjects.forEach((object) => {
 		if (object.type == 'Texture2D') {
 			if (object.m_TextureFormat != 10 && object.m_TextureFormat != 12) {
 				console.error('Only supports DXT1 / DXT5 formats for images!');
@@ -523,7 +509,26 @@ async function parseAssetBundle(data, isManifest) {
 			hasSprites = true;
 		}
 		if (object.type == 'AssetBundleManifest') {
-			assetBundleManifest = object.AssetBundleNames.map(o => o.second);
+			if (!object.AssetBundleNames || !object.AssetBundleInfos || object.AssetBundleNames.length !== object.AssetBundleInfos.length) {
+				throw Error('Invalid asset bundle manifest!');
+			}
+
+			const extractHashBytes = (assetBundleHash) => {
+				let bytes = [];
+				for (let ix = 0; ix < 16; ix++) {
+					bytes.push(assetBundleHash[`bytes[${ix}]`]);
+				}
+				return bytes;
+			}
+
+			assetBundleManifest = [];
+			for (let i = 0; i < object.AssetBundleNames.length; i++) {
+				assetBundleManifest.push({
+					name: object.AssetBundleNames[i].second,
+					hash: extractHashBytes(object.AssetBundleInfos[i].second.AssetBundleHash),
+					dependencies: object.AssetBundleInfos[i].second.AssetBundleDependencies,
+				});
+			}
 		}
 	});
 
@@ -546,13 +551,13 @@ async function parseAssetBundle(data, isManifest) {
 		imageBitmap: {
 			data: imageTexture.rawBitmap,
 			width: imageTexture.m_Width,
-			height: imageTexture.m_Height
+			height: imageTexture.m_Height,
 		},
-		sprites: []
+		sprites: [],
 	};
 
 	if (hasSprites) {
-		parsedObjects.forEach(object => {
+		parsedObjects.forEach((object) => {
 			if (object.type == 'Sprite') {
 				console.assert(!object.m_IsPolygon, "Doesn't support polygonal sprites!");
 				console.assert(object.m_Rect.x + object.m_Rect.width <= imageTexture.m_Width);
@@ -564,8 +569,7 @@ async function parseAssetBundle(data, isManifest) {
 						let pixelLocation = (imageTexture.m_Height - 1 - row) * imageTexture.m_Width + column;
 						imageTexture.rawBitmap.copy(
 							spriteBitmap,
-							((object.m_Rect.height - 1 - row + object.m_Rect.y) * object.m_Rect.width + (column - object.m_Rect.x)) *
-								4,
+							((object.m_Rect.height - 1 - row + object.m_Rect.y) * object.m_Rect.width + (column - object.m_Rect.x)) * 4,
 							pixelLocation * 4,
 							(pixelLocation + 1) * 4
 						);
@@ -577,8 +581,8 @@ async function parseAssetBundle(data, isManifest) {
 					spriteBitmap: {
 						data: spriteBitmap,
 						width: object.m_Rect.width,
-						height: object.m_Rect.height
-					}
+						height: object.m_Rect.height,
+					},
 				});
 			}
 		});
