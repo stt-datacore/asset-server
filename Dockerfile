@@ -9,10 +9,12 @@ RUN apk add --no-cache --virtual .gyp \
         python \
         make \
         g++ \
-    && npm install \
+    && npm ci \
     && apk del .gyp
 
-RUN npm run build
+RUN npm run build && npm prune --production
+
+ENV NODE_ENV=production
 
 # Replace the crontab with our script running every 10 minutes
 RUN echo $'*/10 * * * * cd /usr/src/asset-server && /usr/bin/flock -n /tmp/assets.lock /usr/local/bin/npm start >> /data/logs/assets.log' > /etc/crontabs/root
