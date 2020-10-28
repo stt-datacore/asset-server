@@ -105,96 +105,6 @@ var typeStructParser = new Parser()
 		length: 'num_types',
 	});
 
-var objectParser15 = new Parser()
-	.endianess('little')
-	.uint32('num_objects')
-	.align(4)
-	.array('objects', {
-		type: Parser.start()
-			.skip(3)
-			.endianess('little')
-			.int32('path_id1')
-			.int32('path_id2')
-			.uint32('data_offset')
-			.uint32('size')
-			.int32('type_id')
-			.int16('class_id')
-			.int16('unk1')
-			.int8('unk2')
-			.align(4),
-		length: 'num_objects',
-	})
-	.uint32('num_adds', { assert: 0 })
-	.uint32('num_refs', { assert: 0 })
-	.string('unk_string', {
-		zeroTerminated: true,
-	});
-
-var objectParser15Manifest = new Parser()
-	.endianess('little')
-	.uint32('num_objects')
-	.align(4)
-	.array('objects', {
-		type: Parser.start()
-			.endianess('little')
-			.int32('path_id1')
-			.int32('path_id2')
-			.uint32('data_offset')
-			.uint32('size')
-			.int32('type_id')
-			.int16('class_id')
-			.int16('unk1')
-			.int8('unk2')
-			.align(4),
-		length: 'num_objects',
-	})
-	.uint32('num_adds', { assert: 0 })
-	.uint32('num_refs', { assert: 0 })
-	.string('unk_string', {
-		zeroTerminated: true,
-	});
-
-var objectParser17 = new Parser()
-	.endianess('little')
-	.uint32('num_objects')
-	.array('objects', {
-		type: Parser.start()
-			.endianess('big')
-			.align(4)
-			.int32('path_id1')
-			.int32('path_id2')
-			.uint32('data_offset')
-			.uint32('size')
-			.int32('type_id'),
-		length: 'num_objects',
-	})
-	.uint32('num_adds', { assert: 0 })
-	.uint32('num_refs', { assert: 0 })
-	.string('unk_string', {
-		zeroTerminated: true,
-	});
-
-// Use this parser for images, the big endian for the bundle manifest
-var objectParser17Little = new Parser()
-	.endianess('little')
-	.uint32('num_objects')
-	.array('objects', {
-		type: Parser.start()
-			.endianess('little')
-			.align(4)
-			.int32('path_id1')
-			.int32('path_id2')
-			.uint32('data_offset')
-			.uint32('size')
-			.int32('type_id'),
-		length: 'num_objects',
-	})
-	.uint32('num_adds', { assert: 0 })
-	.uint32('num_refs', { assert: 0 })
-	.string('unk_string', {
-		zeroTerminated: true,
-	});
-
 var assetParser = new Parser()
 	.endianess('big')
 	.uint32('metadata_size')
@@ -204,9 +114,29 @@ var assetParser = new Parser()
 	.uint32('endianness', { assert: 0 })
 	.endianess('little')
 	.nest('typeStruct', { type: typeStructParser })
-	.array('objectData', {
-		type: 'uint8',
-		readUntil: 'eof',
+	.uint32('num_objects')
+	.array('objects', {
+		type: Parser.start()
+			.endianess('little')
+			.align(4)
+			.int32('path_id1')
+			.int32('path_id2')
+			.uint32('data_offset')
+			.uint32('size')
+			.int32('type_id')
+			.choice(undefined, {
+				tag: (vars) => vars.format,
+				choices: {
+					15: Parser.start().endianess('little').int16('class_id').int16('ScriptTypeIndex').int8('stripped'),
+				},
+				defaultChoice: Parser.start(),
+			}),
+		length: 'num_objects',
+	})
+	.uint32('num_adds', { assert: 0 })
+	.uint32('num_refs', { assert: 0 })
+	.string('unk_string', {
+		zeroTerminated: true,
 	});
 
 function alignOff(offset) {
@@ -383,21 +313,8 @@ async function parseAssetBundle(data, isManifest) {
 		asset = assetParser.parse(Buffer.from(bundle.assets));
 	}
 
-	let obj = undefined;
-	if (asset.format === 15) {
-		if (isManifest) {
-			obj = objectParser15Manifest.parse(Buffer.from(asset.objectData));
-		} else {
-			obj = objectParser15.parse(Buffer.from(asset.objectData));
-		}
-	} else if (asset.format === 17) {
-		if (isManifest) {
-			obj = objectParser17.parse(Buffer.from(asset.objectData));
-		} else {
-			obj = objectParser17Little.parse(Buffer.from(asset.objectData));
-		}
-
-		obj.objects.forEach((object, index) => {
+	if (asset.format === 17) {
+		asset.objects.forEach((object, index) => {
 			let class_id = object.type_id;
 
 			// Array index could be "index" most of the time ?
@@ -410,9 +327,6 @@ async function parseAssetBundle(data, isManifest) {
 			object.class_id = class_id;
 		});
 	}
-
-	asset.num_objects = obj.num_objects;
-	asset.objects = obj.objects;
 
 	const strings =
 		'AABB AnimationClip AnimationCurve AnimationState Array Base BitField bitset bool char ColorRGBA Component data deque double dynamic_array FastPropertyName first float Font GameObject Generic Mono GradientNEW GUID GUIStyle int list long long map Matrix4x4f MdFour MonoBehaviour MonoScript m_ByteSize m_Curve m_EditorClassIdentifier m_EditorHideFlags m_Enabled m_ExtensionPtr m_GameObject m_Index m_IsArray m_IsStatic m_MetaFlag m_Name m_ObjectHideFlags m_PrefabInternal m_PrefabParentObject m_Script m_StaticEditorFlags m_Type m_Version Object pair PPtr<Component> PPtr<GameObject> PPtr<Material> PPtr<MonoBehaviour> PPtr<MonoScript> PPtr<Object> PPtr<Prefab> PPtr<Sprite> PPtr<TextAsset> PPtr<Texture> PPtr<Texture2D> PPtr<Transform> Prefab Quaternionf Rectf RectInt RectOffset second set short size SInt16 SInt32 SInt64 SInt8 staticvector string TextAsset TextMesh Texture Texture2D Transform TypelessData UInt16 UInt32 UInt64 UInt8 unsigned int unsigned long long unsigned short vector Vector2f Vector3f Vector4f m_ScriptingClassIdentifier Gradient ';
