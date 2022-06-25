@@ -14,7 +14,7 @@
     "lz4": "0.6.3",
     "lz4js": "^0.2.0",
     "lzma-native": "^6.0.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "pngjs": "^5.0.0",
     "unitiyfs-asset-parser": "file:unitiyfs-asset-parser"
   },
