@@ -27,10 +27,12 @@ var assetBundle = new Parser()
 	.uint32('ciblock_size')
 	.uint32('uiblock_size')
 	.uint32('flags')
+	.align(16)
 	.array('compressedBlk', {
 		type: 'uint8',
 		length: 'ciblock_size',
 	})
+	.align(16)
 	.array('assets', {
 		type: 'uint8',
 		readUntil: 'eof',
@@ -61,7 +63,8 @@ var typeParser = new Parser()
 	.int32('nameOffset')
 	.int32('size')
 	.uint32('index')
-	.int32('flags');
+	.int32('flags')
+	.skip(8); // 0x200 flag set so this is necessary
 
 var typeTreeParser = new Parser()
 	.endianess('little')
@@ -69,12 +72,12 @@ var typeTreeParser = new Parser()
 	.choice(undefined, {
 		tag: (vars) => vars.format,
 		choices: {
-			17: Parser.start().endianess('little').int8('unk0').int16('script_id'),
+			22: Parser.start().endianess('little').int8('unk0').int16('script_id'),
 		},
 		defaultChoice: Parser.start(),
 	})
 	.skip(function (vars) {
-		if (vars.format === 17) {
+		if (vars.format >= 17) {
 			if (this.class_id === 114) {
 				this.class_id = this.script_id >= 0 ? -2 - this.script_id : -1;
 			}
@@ -90,6 +93,11 @@ var typeTreeParser = new Parser()
 	.array('buffer_data', {
 		type: 'uint8',
 		length: 'buffer_bytes',
+	})
+	.uint32('unk_buff_size')
+	.array('unk_array', {
+		type: 'uint32le',
+		length: 'unk_buff_size'
 	});
 
 var typeStructParser = new Parser()
@@ -107,11 +115,16 @@ var typeStructParser = new Parser()
 
 var assetParser = new Parser()
 	.endianess('big')
-	.uint32('metadata_size')
-	.uint32('file_size')
-	.uint32('format', { assert: (fmt) => fmt === 15 || fmt === 17 })
-	.uint32('data_offset') // Hard-coded assume format > 9
+	.skip(8)
+	.uint32('format', { assert: (fmt) => fmt === 22 })
+	.skip(4)
 	.uint32('endianness', { assert: 0 })
+	.uint32('metadata_size')
+	.skip(4)
+	.uint32('file_size')
+	.skip(4)
+	.uint32('data_offset')
+	.skip(8)
 	.endianess('little')
 	.nest('typeStruct', { type: typeStructParser })
 	.uint32('num_objects')
@@ -122,6 +135,7 @@ var assetParser = new Parser()
 			.int32('path_id1')
 			.int32('path_id2')
 			.uint32('data_offset')
+			.skip(4)
 			.uint32('size')
 			.int32('type_id')
 			.choice(undefined, {
@@ -313,7 +327,7 @@ async function parseAssetBundle(data, isManifest) {
 		asset = assetParser.parse(Buffer.from(bundle.assets));
 	}
 
-	if (asset.format === 17) {
+	if (asset.format >= 17) {
 		asset.objects.forEach((object, index) => {
 			let class_id = object.type_id;
 
