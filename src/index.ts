@@ -108,8 +108,9 @@ async function loadAssetURL(client_version: string, bundle_version: string) {
 	let data = await response.json();
 
 	console.log(`Config URL: '${configUrl}'; bundle_version: '${bundle_version}'`);
-
-	return `${data.config.asset_server}bundles/${CLIENT_PLATFORM_FOLDER}/default/${client_version}/${bundle_version}/`;
+	// stt-cdn-services.s3.amazonaws.com
+	//return `${data.config.asset_server}bundles/${CLIENT_PLATFORM_FOLDER}/default/${client_version}/${bundle_version}/`;
+	return `https://stt-cdn-services.s3.amazonaws.com/bundles/${CLIENT_PLATFORM_FOLDER}/default/${client_version}/${bundle_version}/`;
 }
 
 async function recordChangeLog(bundle_version: string, images: Map<string, string[]>) {
