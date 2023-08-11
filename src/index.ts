@@ -98,7 +98,7 @@ async function getLatestBundleVersion() {
 }
 
 async function loadAssetURL(client_version: string, bundle_version: string) {
-	let configUrl = `https://stt.disruptorbeam.com/config?client_version=${client_version}&platform_folder=${CLIENT_PLATFORM_FOLDER}`;
+	let configUrl = `https://app.startrektimelines.com/config?client_version=${client_version}&platform_folder=${CLIENT_PLATFORM_FOLDER}`;
 
 	let response = await fetch(configUrl);
 	if (!response.ok) {
