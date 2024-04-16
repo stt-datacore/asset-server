@@ -6,6 +6,8 @@ import { parseAssetBundle, parseAssetBundleManifest } from 'unitiyfs-asset-parse
 
 require('dotenv').config();
 
+const redoLast = process.argv.length > 2 ? process.argv[2] === 'redo' : false;
+
 const OUT_PATH = path.resolve(process.env.OUT_PATH ? process.env.OUT_PATH : path.join(__dirname, 'out'));
 
 const CLIENT_PLATFORM_FOLDER = 'webgl';
@@ -62,6 +64,10 @@ async function downloadAsset(asset_url: string, url: string, filePath: string, w
 				result.sprites.forEach(sprite => {
 					let pngImage = writePNG(sprite.spriteBitmap.data, sprite.spriteBitmap.width, sprite.spriteBitmap.height);
 					let outPath = path.join(filePath, `${sprite.spriteName}.png`);
+					if (fs.existsSync(outPath)) {
+						console.log(`Removing previous version of '${outPath}'`);
+						fs.rmSync(outPath);
+					}
 					fs.writeFileSync(outPath, pngImage);
 				});
 			} else {
@@ -72,6 +78,10 @@ async function downloadAsset(asset_url: string, url: string, filePath: string, w
 			(result.imageName && result.imageBitmap && result.imageBitmap.width > 0)
 		) {
 			let pngImage = writePNG(result.imageBitmap.data, result.imageBitmap.width, result.imageBitmap.height);
+			if (fs.existsSync(filePath)) {
+				console.log(`Removing previous version of '${filePath}'`);
+				fs.rmSync(filePath);
+			}
 			fs.writeFileSync(filePath, pngImage);
 		}
 	} catch (ex) {
@@ -80,13 +90,18 @@ async function downloadAsset(asset_url: string, url: string, filePath: string, w
 }
 
 async function getLatestBundleVersion() {
+
 	let response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/production/${CLIENT_PLATFORM_FOLDER}_minimum_version.txt`);
 	if (!response.ok) {
 		throw Error('Failed to fetch minimum version');
 	}
 
 	let client_version = (await response.text()).trim();
-
+	console.log(client_version);
+	if (client_version === '10.0.0') {
+		
+		client_version = '10.1.1';
+	}
 	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/production/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
 	if (!response.ok) {
 		throw Error('Failed to fetch bundle version');
@@ -114,6 +129,12 @@ async function loadAssetURL(client_version: string, bundle_version: string) {
 }
 
 async function recordChangeLog(bundle_version: string, images: Map<string, string[]>) {
+	
+	if (redoLast) {
+		console.log("Skipping version write because of 'redo' parameter...");
+		return;
+	}
+
 	let versions = [];
 	if (fs.existsSync(path.join(OUT_PATH, '/data/versions.json'))) {
 		versions = JSON.parse(fs.readFileSync(path.join(OUT_PATH, '/data/versions.json'), 'utf8'));
@@ -177,7 +198,7 @@ async function main() {
 		latestVersion = fs.readFileSync(path.join(OUT_PATH, '/data/latestVersion.txt'), 'utf8').trim();
 	}
 
-	if (latestVersion === bundle_version) {
+	if (latestVersion === bundle_version && !redoLast) {
 		// Nothing to do, no updates
 		console.log(`Nothing to do, no updates (version ${latestVersion})`);
 		return;
@@ -208,7 +229,7 @@ async function main() {
 		// TODO: use the hash of each asset bundle to see if it changed and needs to be redownloaded / invalidated
 		res.assetBundleManifest.forEach(asset => {
 			if (asset.name.startsWith('images_') && asset.name.endsWith('d')) {
-				let name = asset.name.substr(7);
+				let name = asset.name.slice(7);
 				let basename = name.substring(0, name.length - 3);
 				let ext = name.substring(name.length - 2);
 				if (!images.has(basename)) {
@@ -222,7 +243,10 @@ async function main() {
 		});
 
 		for (const [key, val] of images) {
-			if (!fs.existsSync(assetDestination(key))) {
+			// if (fs.existsSync(assetDestination(key))) {
+			// 	fs.rmSync(assetDestination(key));
+			// }
+			if (!fs.existsSync(assetDestination(key)) || key.includes("argo_")) {
 				try {
 					await downloadAsset(asset_url, `images_${key}.${bestResolution(val)}`, assetDestination(key), false);
 				} catch (err) {
