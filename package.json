@@ -10,18 +10,18 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.6.0",
     "lz4": "0.6.3",
     "lz4js": "^0.2.0",
     "lzma-native": "^6.0.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.7.0",
     "pngjs": "^5.0.0",
     "unitiyfs-asset-parser": "file:unitiyfs-asset-parser"
   },
   "devDependencies": {
-    "@types/node": "^14.6.3",
-    "@types/node-fetch": "^2.5.7",
+    "@types/node": "^14.18.63",
+    "@types/node-fetch": "^2.6.11",
     "@types/pngjs": "^3.4.2",
-    "typescript": "^4.0.2"
+    "typescript": "^4.9.5"
   }
 }

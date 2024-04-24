@@ -6,7 +6,7 @@
 		"TemporalAgent7"
 	],
 	"dependencies": {
-		"buffer": "^5.0.8",
+		"buffer": "^5.7.1",
 		"lz4js": "^0.2.0"
 	},
 	"description": "UnityFS Asset Bundle parser",
