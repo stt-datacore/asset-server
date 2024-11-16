@@ -97,11 +97,13 @@ async function getLatestBundleVersion() {
 	}
 
 	let client_version = (await response.text()).trim();
-	console.log(client_version);
 	if (client_version === '10.0.0') {
-		
 		client_version = '10.1.1';
 	}
+	if (client_version === '11.0.2') {
+		client_version = '11.0.3';
+	}
+	console.log(client_version);
 	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/production/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
 	if (!response.ok) {
 		throw Error('Failed to fetch bundle version');
@@ -129,7 +131,7 @@ async function loadAssetURL(client_version: string, bundle_version: string) {
 }
 
 async function recordChangeLog(bundle_version: string, images: Map<string, string[]>) {
-	
+
 	if (redoLast) {
 		console.log("Skipping version write because of 'redo' parameter...");
 		return;
