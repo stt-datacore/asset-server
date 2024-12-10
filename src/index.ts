@@ -103,6 +103,9 @@ async function getLatestBundleVersion() {
 	if (client_version === '11.0.2') {
 		client_version = '11.0.3';
 	}
+	if (client_version === '11.0.3') {
+		client_version = '11.0.4';
+	}
 	console.log(client_version);
 	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/production/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
 	if (!response.ok) {
