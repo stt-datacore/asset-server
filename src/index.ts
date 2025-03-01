@@ -97,15 +97,13 @@ async function getLatestBundleVersion() {
 	}
 
 	let client_version = (await response.text()).trim();
-	if (client_version === '10.0.0') {
-		client_version = '10.1.1';
-	}
-	if (client_version === '11.0.2') {
-		client_version = '11.0.3';
-	}
+
+	// You may need to periodically change this when a new client is released.
+	// Sometimes the server does not track the correct minimum version.
 	if (client_version === '11.0.3') {
 		client_version = '11.0.4';
 	}
+
 	console.log(client_version);
 	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/${process.env.ASSET_ENV || 'production'}/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
 	if (!response.ok) {
