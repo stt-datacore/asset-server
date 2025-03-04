@@ -246,10 +246,7 @@ async function main() {
 		});
 
 		for (const [key, val] of images) {
-			// if (fs.existsSync(assetDestination(key))) {
-			// 	fs.rmSync(assetDestination(key));
-			// }
-			if (!fs.existsSync(assetDestination(key)) || key.includes("argo_")) {
+			if (!fs.existsSync(assetDestination(key))) {
 				try {
 					await downloadAsset(asset_url, `images_${key}.${bestResolution(val)}`, assetDestination(key), false);
 				} catch (err) {
