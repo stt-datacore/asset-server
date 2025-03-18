@@ -98,10 +98,15 @@ async function getLatestBundleVersion() {
 
 	let client_version = (await response.text()).trim();
 
+
+	let vi = process.argv.indexOf('--version');
+	if (vi != -1 && vi + 1 < process.argv.length) {
+		client_version = process.argv[vi+1];
+	}
 	// You may need to periodically change this when a new client is released.
 	// Sometimes the server does not track the correct minimum version.
-	if (client_version === '11.0.3') {
-		client_version = '11.0.4';
+	if (client_version === '11.0.4') {
+		client_version = '11.1.0';
 	}
 
 	console.log(client_version);
