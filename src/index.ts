@@ -110,7 +110,7 @@ async function getLatestBundleVersion() {
 	}
 
 	vi = process.argv.indexOf('--server');
-	let env = process.env.ASSET_ENV || 'production'
+	let env = process.env.ASSET_ENV || 'production';
 	if (vi !== -1 && vi + 1 < process.argv.length) {
 		env = process.argv[vi+1];
 	}
