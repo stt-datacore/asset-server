@@ -109,6 +109,12 @@ async function getLatestBundleVersion() {
 		client_version = '11.1.0';
 	}
 
+	vi = process.argv.indexOf('--server');
+	let env = process.env.ASSET_ENV || 'production'
+	if (vi !== -1 && vi + 1 < process.argv.length) {
+		env = process.argv[vi+1];
+	}
+
 	console.log(client_version);
 	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/${process.env.ASSET_ENV || 'production'}/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
 	if (!response.ok) {
