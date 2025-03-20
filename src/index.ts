@@ -116,7 +116,7 @@ async function getLatestBundleVersion() {
 	}
 
 	console.log(client_version);
-	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/${process.env.ASSET_ENV || 'production'}/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
+	response = await fetch(`https://stt-cdn-services.s3.amazonaws.com/${env}/${CLIENT_PLATFORM_FOLDER}_${client_version}.txt`);
 	if (!response.ok) {
 		throw Error('Failed to fetch bundle version');
 	}
