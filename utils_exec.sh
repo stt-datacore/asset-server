@@ -2,7 +2,7 @@
 TZ=UTC date
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $DIR
-TZ=UTC date | grep -e ":\w5:" -e ":\w0:" && date | grep -v -e ":30:" -v -e ":00:" && /utils/utils_cap.sh && exit 0
+TZ=UTC date | grep -e ":\w5:" -e ":\w0:" && date | grep -v -e ":30:" -v -e ":00:" && /utils/utils_cap.sh && popd && exit 0
 npm run start
 if [ "$1" = "--first" ]; then
     /utils/utils_minor.sh
