@@ -6,7 +6,7 @@ import { parseAssetBundle, parseAssetBundleManifest } from 'unitiyfs-asset-parse
 
 require('dotenv').config();
 
-const redoLast = process.argv.length > 2 ? process.argv[2] === 'redo' : false;
+const redoLast = process.argv.length > 2 ? process.argv[2] === '--redo' : false;
 
 const OUT_PATH = path.resolve(process.env.OUT_PATH ? process.env.OUT_PATH : path.join(__dirname, 'out'));
 
