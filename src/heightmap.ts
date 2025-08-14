@@ -33,6 +33,7 @@ async function getHeightInfo(file: string) {
         try {
             fs.createReadStream(file)
                 .pipe(new PNG())
+                .on('error', reject)
                 .on('parsed', function () {
                     height = this.height;
                     for (let y = 0; y < this.height; y++) {
@@ -40,13 +41,7 @@ async function getHeightInfo(file: string) {
                         let x = 0;
                         for (x = 0; x < this.width; x++) {
                             const idx = rowStart + x * 4;
-                            const r = this.data[idx];
-                            const g = this.data[idx + 1];
-                            const b = this.data[idx + 2];
-                            const a = this.data[idx + 3];
-                            if (a) {
-                                break;
-                            }
+                            if (this.data[idx + 3]) break;
                         }
                         if (x === this.width) empty++;
                         else break;
@@ -99,7 +94,6 @@ async function processCrewImages(refresh = false) {
     }
     fs.writeFileSync(`${imagePath}/height_info.json`, JSON.stringify(infoOut, null, 4));
 }
-
 
 (async () => {
     let refresh = process.argv.includes("--refresh");
