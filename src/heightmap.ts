@@ -1,5 +1,8 @@
 import fs from 'fs';
+import path from 'path';
 import { PNG } from 'pngjs';
+
+const OUT_PATH = path.resolve(process.env.OUT_PATH ? process.env.OUT_PATH : path.join(__dirname, 'out'));
 
 require('dotenv').config();
 interface HeightInfo {
@@ -62,7 +65,7 @@ async function processCrewImages(refresh = false) {
     console.log("Computing image heights...");
     const crewfile = '../website/static/structured/crew.json';
     const crew = JSON.parse(fs.readFileSync(crewfile, 'utf-8')) as { symbol: string, imageUrlFullBody: string, name: string, short_name: string }[];
-    const imagePath = `${process.env.OUT_PATH}/assets`;
+    const imagePath = `${OUT_PATH}/assets`;
     const heightFile = `${imagePath}/height_info.json`;
 
     const imgmap = crew.map(c => ({ symbol: c.symbol, image: c.imageUrlFullBody }));
