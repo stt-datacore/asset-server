@@ -5,7 +5,10 @@ pushd $DIR
 if [ "$1" != "--first" ]; then
     TZ=UTC date | grep -e ":\w5:" -e ":\w0:" && date | grep -v -e ":30:" -v -e ":00:" && /utils/utils_cap.sh && popd && exit 0
 fi
+
 npm run start
+npm run height
+
 if [ "$1" == "--first" ]; then
     /utils/utils_minor.sh
 fi
