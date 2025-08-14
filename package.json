@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
-    "redo": "node build/index.js --redo"
+    "redo": "node build/index.js --redo",
+    "height": "tsc && node build/heightmap.js",
+    "height-refresh": "tsc && node build/heightmap.js --refresh"
   },
   "author": "",
   "license": "MIT",
