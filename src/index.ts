@@ -12,8 +12,8 @@ const OUT_PATH = path.resolve(process.env.OUT_PATH ? process.env.OUT_PATH : path
 
 const CLIENT_PLATFORM_FOLDER = 'webgl';
 
-function assetDestination(iconName: string) {
-	return path.join(OUT_PATH, '/assets/', iconName.length < 2 ? '/atlas/' : `${iconName}.png`);
+function assetDestination(iconName: string, vo?: boolean) {
+	return path.join(OUT_PATH, '/assets/', iconName.length < 2 ? (vo ? '/voice/' : '/atlas/') : `${iconName}${vo ? '.mp3' : '.png'}`);
 }
 
 function bestResolution(resolutions: string[]) {
@@ -240,6 +240,7 @@ async function main() {
 	if (res.assetBundleManifest) {
 		let images = new Map<string, string[]>();
 		let atlases: string[] = [];
+		let voices: string[] = [];
 		// TODO: use the hash of each asset bundle to see if it changed and needs to be redownloaded / invalidated
 		res.assetBundleManifest.forEach(asset => {
 			if (asset.name.startsWith('images_') && asset.name.endsWith('d')) {
@@ -253,6 +254,8 @@ async function main() {
 				}
 			} else if (asset.name.startsWith('atlas_') && asset.name.endsWith('sd')) {
 				atlases.push(asset.name);
+			} else if (asset.name.startsWith("vo_")) {
+				voices.push(asset.name);
 			}
 		});
 
@@ -269,6 +272,14 @@ async function main() {
 		for (const asset of atlases) {
 			try {
 				await downloadAsset(asset_url, asset, assetDestination(''), true);
+			} catch (err) {
+				console.error(err);
+			}
+		}
+
+		for (const asset of voices) {
+			try {
+				await downloadAsset(asset_url, asset, assetDestination('', true), true);
 			} catch (err) {
 				console.error(err);
 			}
