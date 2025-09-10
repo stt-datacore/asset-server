@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const OUT_PATH = path.resolve(process.env.OUT_PATH ? process.env.OUT_PATH : path.join(__dirname, 'out'));
 const STATIC_PATH = path.resolve(process.env.STATIC_PATH ? process.env.STATIC_PATH : path.join(__dirname, '../website/structured'));
+const HEIGHT_PATH = path.resolve(process.env.HEIGHT_PATH ? process.env.HEIGHT_PATH : path.join(__dirname, '../scripts/data'));
 
 interface HeightInfo {
     symbol: string;
@@ -63,7 +64,7 @@ async function processCrewImages(refresh = false) {
     const crewfile = `${STATIC_PATH}/crew.json`;
     const crew = JSON.parse(fs.readFileSync(crewfile, 'utf-8')) as { symbol: string, imageUrlFullBody: string, name: string, short_name: string }[];
     const imagePath = `${OUT_PATH}/assets`;
-    const heightFile = `${imagePath}/height_info.json`;
+    const heightFile = `${HEIGHT_PATH}/height_info.json`;
 
     const imgmap = crew.map(c => ({ symbol: c.symbol, image: c.imageUrlFullBody }));
 
@@ -92,7 +93,7 @@ async function processCrewImages(refresh = false) {
         info.low = info.empty >= 300;
         infoOut.push(info);
     }
-    fs.writeFileSync(`${imagePath}/height_info.json`, JSON.stringify(infoOut, null, 4));
+    fs.writeFileSync(heightFile, JSON.stringify(infoOut, null, 4));
 }
 
 (async () => {
