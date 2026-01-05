@@ -93,6 +93,7 @@ async function processCrewImages(refresh = false) {
         info.low = info.empty >= 300;
         infoOut.push(info);
     }
+    console.log("DONE: Computing image heights.");
     fs.writeFileSync(heightFile, JSON.stringify(infoOut, null, 4));
 }
 
