@@ -64,7 +64,7 @@ async function processCrewImages(refresh = false) {
     const crewfile = `${STATIC_PATH}/crew.json`;
     const crew = JSON.parse(fs.readFileSync(crewfile, 'utf-8')) as { symbol: string, imageUrlFullBody: string, name: string, short_name: string }[];
     const imagePath = `${OUT_PATH}/assets`;
-    const heightFile = `${HEIGHT_PATH}/height_info.json`;
+    const heightFile = `${OUT_PATH}/assets/height_info.json`;
 
     const imgmap = crew.map(c => ({ symbol: c.symbol, image: c.imageUrlFullBody }));
 
