@@ -105,9 +105,9 @@ async function getLatestBundleVersion() {
 	}
 	// You may need to periodically change this when a new client is released.
 	// Sometimes the server does not track the correct minimum version.
-	// else if (client_version === '12.0.1') {
-	// 	client_version = '12.0.0';
-	// }
+	else if (client_version === '12.0.0') {
+		client_version = '12.0.1';
+	}
 
 	vi = process.argv.indexOf('--server');
 	let env = process.env.ASSET_ENV || 'production';
