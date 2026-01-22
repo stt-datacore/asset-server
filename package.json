@@ -16,7 +16,7 @@
     "dotenv": "^8.6.0",
     "lz4": "0.6.3",
     "lz4js": "^0.2.0",
-    "lzma-native": "^6.0.1",
+    "lzma-native": "^8.0.6",
     "node-fetch": "^2.7.0",
     "pngjs": "^5.0.0",
     "unitiyfs-asset-parser": "file:unitiyfs-asset-parser"
