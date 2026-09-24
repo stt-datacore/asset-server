@@ -10,11 +10,9 @@ npm run start
 npm run height
 
 if [ "$1" == "--first" ]; then
-    /utils/utils_minor.sh
+    /utils/utils_major.sh
 fi
-TZ=UTC date | grep -v -e " 02:30" -v -e " 14:30" && date | grep -e ":00:" -e ":30:" && /utils/utils_minor.sh
-TZ=UTC date | grep -e " 02:30" -e " 14:30" && /utils/utils_major.sh
-
+TZ=UTC date | grep -e ":00:" -e ":30:" && /utils/utils_major.sh
 
 popd
 
